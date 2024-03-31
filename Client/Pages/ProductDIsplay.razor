@@ -1,0 +1,69 @@
+﻿@page "/product"
+@using DurbarSalesApp.Shared
+@inject HttpClient httpClient;
+
+<PageTitle>Counter</PageTitle>
+
+<h3>Product</h3>
+<br /><br />
+
+@if(productList != null && productList.Count != 0)
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Name</td>
+                <td>Code</td>
+                <td>Price</td>
+                <td>Delete</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var prod in productList)
+            {
+                <tr>
+                    <td>@prod.ProductName</td>
+                    <td>@prod.ProductCode</td>
+                    <td>@prod.ProductPrice</td>
+                    <td><button @onclick="async () => {await DeleteProduct(prod.ProductCode);}">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+else{
+    <span style="color:red; font-weight:600">No Products to display</span>
+}
+<br /><br />
+
+<input @bind="product.ProductName" placeholder="Name" />
+<input @bind="product.ProductCode" placeholder="Code" />
+<input @bind="product.ProductPrice" placeholder="Price" />
+<br />
+<br />
+<button @onclick="AddProduct"> Add Product </button>
+
+@code {
+    private List<Product>? productList;
+    private Product product = new Product();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        productList = await httpClient.GetFromJsonAsync<List<Product>>("api/Product/GetProduct");
+        await base.OnInitializedAsync();
+    }
+
+    private async Task DeleteProduct(string productCode)
+    {
+        await httpClient.DeleteAsync($"api/Product/DeleteProduct?productCode={productCode}");
+        productList = await httpClient.GetFromJsonAsync<List<Product>>("api/Product/GetProduct");
+    }
+
+    private async Task AddProduct()
+    {
+        await httpClient.PostAsJsonAsync<Product>("api/Product/AddProduct", product);
+        productList = await httpClient.GetFromJsonAsync<List<Product>>("api/Product/GetProducts");
+    }
+}

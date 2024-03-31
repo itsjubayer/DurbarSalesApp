@@ -1,0 +1,162 @@
+﻿@page "/"
+@using DurbarSalesApp.Client.Services
+@using DurbarSalesApp.Shared
+@* @inject IDurbarService dService *@
+@inject NavigationManager navigationManager
+@inject HttpClient Http
+
+<style>
+#tableStyleCss {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#tableStyleCss td, #tableStyleCss th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#tableStyleCss tr:nth-child(even){background-color: #f2f2f2;}
+
+#tableStyleCss tr:hover {background-color: #ddd;}
+
+#tableStyleCss th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
+</style>
+
+
+<h3>DurbarDataList</h3>
+
+@if (GenerateListObj == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+    <table class="table table-bordered" id="tableStyleCss">
+        <thead>
+            <tr>
+                <td>Regional Office</td>
+                <td>Regional Store</td>
+                <td>District Sales Centre</td>
+                <td>Upazilla Sales Centre</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dataObj in GenerateListObj)
+            {
+                <tr>
+                    <td>@dataObj.RegionalOffice.RegionalOfficeName</td>
+                    <td>@dataObj.RegionalStore.RegionalStoreName</td>
+                    <td>
+                        <table>
+                            <tr><td>Ctg A</td><td>Ctg B</td></tr>
+                            <tr>
+                                <td>
+                            <ul>
+                                @{
+                                    var getCtgA = dataObj.DistrictSalesCentreList.Where(e => e.CtgType == "CtgA" && e.RegionalOfficeId==dataObj.RegionalOfficeId && e.RegionalStoreId==dataObj.RegionalStoreId);
+                                }
+                                @if (getCtgA.Count() > 0)
+                                {
+                                    foreach (var districtObj in getCtgA)
+                                    {
+                                        <li> @districtObj.DistrictName</li>
+                                    }
+
+                                }
+                            </ul>
+                                </td>
+                           
+                            
+
+                                <td>
+                                    <ul>
+                                        @{
+                                            var getCtgB = dataObj.DistrictSalesCentreList.Where(e => e.CtgType == "CtgB" && e.RegionalOfficeId == dataObj.RegionalOfficeId && e.RegionalStoreId == dataObj.RegionalStoreId);
+                                        }
+                                        @if (getCtgA.Count() > 0)
+                                        {
+                                            foreach (var districtObj in getCtgB)
+                                            {
+                                                <li> @districtObj.DistrictName</li>
+                                            }
+
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                     </td>
+                    <td>
+                        
+                        <table>
+                                <tr><td>Ctg A</td> <td>Ctg B</td></tr>
+                            <tr>
+                                <td>
+                            <ul>
+                                @{
+                                            var getUpaCtgA = dataObj.UpazillaSalesCentreList.Where(e => e.CtgType == "CtgA" && e.RegionalOffice.Id == dataObj.RegionalOfficeId && e.RegionalStore.Id == dataObj.RegionalStoreId);
+                                }
+                                @if (getCtgA.Count() > 0)
+                                {
+                                    foreach (var upzillaObj in getUpaCtgA)
+                                    {
+                                        <li> @upzillaObj.UpazillaName</li>
+                                    }
+
+                                }
+                            </ul>
+                                </td>
+                            
+                                <td>
+                                    <ul>
+                                      @{
+                                            var getUpaCtgB = dataObj.UpazillaSalesCentreList.Where(e => e.CtgType == "CtgB" && e.RegionalOffice.Id == dataObj.RegionalOfficeId && e.RegionalStore.Id == dataObj.RegionalStoreId);
+                                        }
+                                        @if (getCtgA.Count() > 0)
+                                        {
+                                            foreach (var upzillaObj in getUpaCtgB)
+                                            {
+                                                <li> @upzillaObj.UpazillaName</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                       
+
+                        
+                    </td>
+
+
+                    @* <td><button @onclick="async () => {await DeleteProduct(prod.ProductCode);}">Delete</button></td> *@
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+
+
+
+@code {
+    List<GenerateList> GenerateListObj = new List<GenerateList>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        GenerateListObj = await Http.GetFromJsonAsync<List<GenerateList>>("api/Durbar/GetList");
+
+        //await dService.GetList();
+    }
+}
